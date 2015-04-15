@@ -1,6 +1,7 @@
 <?php
 
-/*
+/**
+ * @file
  * Field API funcitons.
  */
 
@@ -29,17 +30,18 @@ function xpath_field_field_info() {
 
 /**
  * Implementation of hook_field_create_field.
- * 
+ *
  * Sets the field's storage backend to our custom, non-persisting, backend.
- * @param Array $field
+ *
+ * @param array $field
  */
 function xpath_field_field_create_field($field) {
   if ($field['type'] == 'xpath_field_xpath') {
     $field['storage'] = array(
-        'type' => 'xpath_field_storage',
-        'settings' => array(),
-        'module' => 'xpath_field',
-        'active' => 1,
+      'type' => 'xpath_field_storage',
+      'settings' => array(),
+      'module' => 'xpath_field',
+      'active' => 1,
     );
 
     // Build record to update.
@@ -57,18 +59,19 @@ function xpath_field_field_create_field($field) {
 }
 
 /**
-* Implements hook_field_update_field().
-*/
+ * Implements hook_field_update_field().
+ */
 function xpath_field_field_update_field($field) {
   xpath_field_field_create_field($field);
 }
 
 /**
- * Implementation of hook_storage_info
- * 
+ * Implementation of hook_storage_info.
+ *
  * This info isn't properly saved by Drupal when a new vield instance is created.
+ *
  * @see xpath_field_field_create_field for a workaround.
- * 
+ *
  * @return Array
  */
 function xpath_field_field_storage_info() {
@@ -87,10 +90,10 @@ function xpath_field_field_storage_query(EntityFieldQuery $query) {
 
 /**
  * Implementation of hook_field_storage_load().
- * 
+ *
  * Loads the XML field that this field derives its data from and runs the XPath query
  * to build the field data that attaches to an entity.
- * 
+ *
  * @param string $entity_type
  * @param array $entities
  * @param int $age
@@ -103,8 +106,8 @@ function xpath_field_field_attach_load($entity_type, $entities, $age, $options) 
   foreach ($entities as $entity) {
     $bundle_name = property_exists($entity, 'type') ? $entity->type : NULL;
     $entity_info = field_info_instances($entity_type, $bundle_name);
-    
-    foreach($entity as $field_name => $field) {
+
+    foreach ($entity as $field_name => $field) {
       if (is_array($entity->{$field_name})
           && array_key_exists($field_name, $map)
           && $map[$field_name]['type'] == 'xpath_field_xpath') {
@@ -141,7 +144,7 @@ function xpath_field_get_xml_data_from_remote_field($xml_field_data, $settings) 
 
 /**
  * Implementation of hook_widget_info().
- * 
+ *
  * @return array
  */
 function xpath_field_field_widget_info() {
@@ -159,10 +162,10 @@ function _xpath_field_instance_xpath(array $instance) {
 
 /**
  * Implementation of hook_field_widget_form().
- * 
+ *
  * Adds extra form elements to the node edit form. These elements are read-only and reflect
  * the result of the field instance's XPath query on the XML field it's been configured to point to.
- * 
+ *
  * @param array $form
  * @param array $form_state
  * @param array $field
@@ -178,12 +181,11 @@ function xpath_field_field_widget_form(&$form, &$form_state, $field, $instance, 
 
   switch ($instance['widget']['type']) {
     case 'xpath_field_xpath':
-      
+
       $entity = isset($element['#entity']) ? $element['#entity'] : NULL;
-      
+
       if ($entity) {
         // We are attached to an entity, and not in the widget instance settings form.
-
         $element['xpath_element'] = array(
           '#type' => 'textfield',
           '#title' => "{$instance['label']} (Derrived with $xpath)",
@@ -200,7 +202,7 @@ function xpath_field_field_widget_form(&$form, &$form_state, $field, $instance, 
 
 /**
  * Implementation of hook_field_formatter_info().
- * 
+ *
  * @return array
  */
 function xpath_field_field_formatter_info() {
@@ -215,7 +217,7 @@ function xpath_field_field_formatter_info() {
 
 /**
  * Implementation of hook_field_validate().
- * 
+ *
  * Always returns true because the user doens't input this field directly.
  */
 function xpath_field_field_validate($element, $form_state) {
@@ -226,16 +228,16 @@ function xpath_field_field_validate($element, $form_state) {
  * Field formatter functions.
  */
 function xpath_field_field_formatter_info_alter(&$info) {
-  
+
   $info['text_default']['field types'][] = 'xpath_field_xpath';
-  
+
 }
 
 /**
  * Implementation of hook_field_formatter_view().
- * 
+ *
  * Puts the XPath field data into a simple markup field.
- * 
+ *
  * @param string $entity_type
  * @param StdClass $entity
  * @param array $field
@@ -243,20 +245,21 @@ function xpath_field_field_formatter_info_alter(&$info) {
  * @param string $langcode
  * @param array $items
  * @param int $display
+ *
  * @return array
  */
 function xpath_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   switch ($display['type']) {
-  case 'xpath_field_safe':
-    foreach ($items as $index => $instance) {
-      $element[$index] = array(
-        '#type' => 'markup',
-        '#markup' => $items[$index]['value'],
-      );
-    }
-    break;
-   
+    case 'xpath_field_safe':
+      foreach ($items as $index => $instance) {
+        $element[$index] = array(
+          '#type' => 'markup',
+          '#markup' => $items[$index]['value'],
+        );
+      }
+      break;
+
   }
 
   return $element;
@@ -264,14 +267,14 @@ function xpath_field_field_formatter_view($entity_type, $entity, $field, $instan
 
 /**
  * Implement hook_field_widget_settings_form().
- * 
+ *
  * Adds settings for XML Field and XPath value.
  */
 function xpath_field_field_widget_settings_form($field, $instance) {
 
   $widget = $instance['widget'];
   $settings = $widget['settings'];
-  
+
   $form = array();
   $form['xml_field_instance'] = array(
     '#type' => 'select',
@@ -330,14 +333,14 @@ function xpath_field_field_widget_settings_form($field, $instance) {
     '#access' => $xsl_formatter_enabled,
     '#default_value' => isset($settings['use_xslt']) ? $settings['use_xslt'] : 'xpath',
   );
-    
+
   $xsl_enabled_states = array(
     'enabled' => array(
       ':input[name="instance[widget][settings][use_xslt]"]' => array('value' => 'xslt'),
     ),
   );
-  
-  $xsls = $xsl_formatter_enabled ? xsl_formatter_enumerate_xsls(): array();
+
+  $xsls = $xsl_formatter_enabled ? xsl_formatter_enumerate_xsls() : array();
   $form['xsl_path'] = array(
     '#title' => t('XSL path'),
     '#type' => 'select',
@@ -349,15 +352,15 @@ function xpath_field_field_widget_settings_form($field, $instance) {
     '#states' => $xsl_enabled_states,
     '#access' => $xsl_formatter_enabled,
   );
-  
-  // file upload needs an explicit name. This is horrid sorry
+
+  // file upload needs an explicit name. This is horrid sorry.
   $upload_field_id = 'files[' . drupal_clean_css_identifier("files[instance][widget][settings][xsl_upload]") . ']';
   $form['xsl_upload'] = array(
     '#type' => 'file',
     '#title' => t('Upload XSL file'),
     '#maxlength' => 40,
     '#description' => t("This will be placed in your files/xsl folder where it can be found and re-used."),
-    '#element_validate' => $xsl_formatter_enabled ?  array('xsl_formatter_xsl_upload_validate') : array(),
+    '#element_validate' => $xsl_formatter_enabled ? array('xsl_formatter_xsl_upload_validate') : array(),
     '#name' => $upload_field_id,
     '#states' => $xsl_enabled_states,
     '#access' => $xsl_formatter_enabled,
@@ -365,11 +368,11 @@ function xpath_field_field_widget_settings_form($field, $instance) {
   $module_path = drupal_get_path('module', 'xsl_formatter');
   $form['xsl_params'] = array(
     '#title' => t('Additional params'),
-      '#type' => 'textarea',
+    '#type' => 'textarea',
     '#rows' => 2,
     '#cols' => 24,
     '#description' => t("Additional parameters that the Transformation stylesheet may expect. Use JSON format, eg <pre>{\"indent-elements\":true, \"css-stylesheet\":\"$module_path/xsl/xmlverbatim.css\"}</pre>"),
-      '#default_value' => $settings['xsl_params'],
+    '#default_value' => $settings['xsl_params'],
     '#element_validate' => $xsl_formatter_enabled ? array('xsl_formatter_xsl_params_validate') : array(),
     '#states' => $xsl_enabled_states,
     '#access' => $xsl_formatter_enabled,
@@ -381,8 +384,8 @@ function xpath_field_field_widget_settings_form($field, $instance) {
     '#default_value' => $settings['debug'],
     '#states' => $xsl_enabled_states,
     '#access' => $xsl_formatter_enabled,
-  );  
-  
+  );
+
   $form['xpath'] = array(
     '#type' => 'textfield',
     '#title' => t('XPath value'),
@@ -392,9 +395,9 @@ function xpath_field_field_widget_settings_form($field, $instance) {
       'enabled' => array(
         ':input[name="instance[widget][settings][use_xslt]"]' => array('value' => 'xpath'),
       ),
-    ),    
+    ),
   );
-  
+
   return $form;
 }
 
@@ -411,8 +414,9 @@ function xpath_field_xsl_path_validate($element, &$form_state, $form) {
 /**
  * Implementation of hook_form_field_ui_field_edit_form_alter().
  * Add a submit handler so we can clear Drupal's field cache.
- * @param Array $form
- * @param Array $form_state
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function xpath_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
   if ($form['#field']['module'] == 'xpath_field') {
@@ -421,10 +425,11 @@ function xpath_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
 }
 
 /**
- * Since Drupal caches field contents we need to clear the field cache when the 
+ * Since Drupal caches field contents we need to clear the field cache when the
  * user changes the field settings.
- * @param Array $form
- * @param Array $form_state
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function xpath_field_widget_settings_form_submit($form, &$form_state) {
   drupal_set_message(t('The field cache has been cleared.'));
@@ -433,7 +438,7 @@ function xpath_field_widget_settings_form_submit($form, &$form_state) {
 
 /**
  * Implementation of hook_field_is_empty().
- * 
+ *
  * Always FALSE because the field's value is populated dynamically.
  */
 function xpath_field_field_is_empty($item, $field) {
@@ -447,9 +452,10 @@ function xpath_field_field_is_empty($item, $field) {
 /**
  * Runs an XPath query against the XML Field and returns the SimpleXMLElement containing
  * the results.
- * 
+ *
  * @param string $xml_string
  * @param string $xpath
+ *
  * @return string The XML result.
  */
 function xpath_field_get_xpath_fragment($xml_string, $xpath) {
@@ -458,11 +464,12 @@ function xpath_field_get_xpath_fragment($xml_string, $xpath) {
   try {
     $xml = new SimpleXMLElement($xml_string);
     $results = $xml->xpath($xpath);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     drupal_set_message($e->getMessage());
   }
   if (!empty($results)) {
-    foreach($results as $result) {
+    foreach ($results as $result) {
       $resultsXML[] = $result->asXml();
     }
   }
@@ -470,7 +477,7 @@ function xpath_field_get_xpath_fragment($xml_string, $xpath) {
 }
 
 function xpath_field_apply_xsl_transformation($xml_string, $xsl_path, $xsl_params, $debug = FALSE) {
-  $xml_doc = new DomDocument;
+  $xml_doc = new DomDocument();
   try {
     if ($debug) {
       $xml_doc->loadXml($xml_string);
@@ -478,12 +485,12 @@ function xpath_field_apply_xsl_transformation($xml_string, $xsl_path, $xsl_param
     else {
       @$xml_doc->loadXml($xml_string);
     }
-    
+
     $xsl_doc = xsl_formatter_get_xml_doc($xsl_path);
-    $params = (array)json_decode($xsl_params);
+    $params = (array) json_decode($xsl_params);
     // 'base' can be used for supporting relative css links.
     $params['base'] = url(dirname($xsl_doc->documenturi));
-    // Transform
+    // Transform.
     $result = xsl_formatter_xmldoc_plus_xsldoc($xml_doc, $xsl_doc, $params);
   }
   catch (Exception $e) {
@@ -493,7 +500,7 @@ function xpath_field_apply_xsl_transformation($xml_string, $xsl_path, $xsl_param
 }
 
 function xpath_field_get_xml_extractor($settings) {
-  if ($settings['is_remote_path'] == True) {
+  if ($settings['is_remote_path'] == TRUE) {
     $xml_extractor = 'xpath_field_get_xml_data_from_remote_field';
   }
   else {
@@ -506,7 +513,7 @@ function xpath_field_extract_fragments($entity_type, $entity, $field_name, $fiel
   $field_instance = field_info_instance($entity_type, $field_name, $entity->type);
   $settings = $field_instance['widget']['settings'];
   $xml_extractor = xpath_field_get_xml_extractor($settings);
-  
+
   $xml_field_instance = isset($settings['xml_field_instance']) ? $settings['xml_field_instance'] : NULL;
   if ($xml_field_instance) {
     $lang = property_exists($entity, 'language') ? $entity->language : NULL;
@@ -514,15 +521,15 @@ function xpath_field_extract_fragments($entity_type, $entity, $field_name, $fiel
     if ($lang !== NULL) {
       foreach ($entity->{$xml_field_instance}[$lang] as $xml_field_data) {
         $xml = $xml_extractor($xml_field_data, $settings);
-        
-        switch($settings['use_xslt']) {
-        case 'xpath':
-          $fragments = xpath_field_get_xpath_fragment($xml, $xpath);
-          break;
-          
-        case 'xslt':
-          $fragments = array(xpath_field_apply_xsl_transformation($xml, $settings['xsl_path'], $settings['xsl_params']));
-          break;
+
+        switch ($settings['use_xslt']) {
+          case 'xpath':
+            $fragments = xpath_field_get_xpath_fragment($xml, $xpath);
+            break;
+
+          case 'xslt':
+            $fragments = array(xpath_field_apply_xsl_transformation($xml, $settings['xsl_path'], $settings['xsl_params']));
+            break;
         }
       }
     }
@@ -541,7 +548,7 @@ function xpath_field_xsl_upload_validate($element, &$form_state, $form) {
   $upload_field_id = 'files-' . substr($element['#id'], strlen('edit-'));
 
   // Get it. Temporary at first.
-  $validators = array('file_validate_extensions' => array('xsl','xslt'));
+  $validators = array('file_validate_extensions' => array('xsl', 'xslt'));
   $file = file_save_upload($upload_field_id, $validators);
 
   if (!empty($file)) {
@@ -602,7 +609,7 @@ function xpath_field_settings_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Save'),
   );
-  
+
   return $form;
 }
 
