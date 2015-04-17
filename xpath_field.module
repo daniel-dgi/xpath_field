@@ -188,7 +188,7 @@ function xpath_field_field_widget_form(&$form, &$form_state, $field, $instance, 
         // We are attached to an entity, and not in the widget instance settings form.
         $element['xpath_element'] = array(
           '#type' => 'textfield',
-          '#title' => "{$instance['label']} (Derrived with $xpath)",
+          '#title' => "{$instance['label']} (Derived with $xpath)",
           '#value' => $entity->{$instance['field_name']}[$element['#language']][$delta],
           '#attributes' => array('readonly' => 'readonly'),
 
@@ -344,7 +344,7 @@ function xpath_field_field_widget_settings_form($field, $instance) {
   $form['xsl_path'] = array(
     '#title' => t('XSL path'),
     '#type' => 'select',
-    '#default_value' => $settings['xsl_path'],
+    '#default_value' => (isset($settings['xsl_path']) ? $settings['xsl_path'] : ""),
     '#element_validate' => array('xpath_field_xsl_path_validate'),
     '#description' => t("Path to the location of the XSL file. Search will be made relative to the files/xsl directory, then the module directory."),
     '#options' => $xsls,
@@ -372,7 +372,7 @@ function xpath_field_field_widget_settings_form($field, $instance) {
     '#rows' => 2,
     '#cols' => 24,
     '#description' => t("Additional parameters that the Transformation stylesheet may expect. Use JSON format, eg <pre>{\"indent-elements\":true, \"css-stylesheet\":\"$module_path/xsl/xmlverbatim.css\"}</pre>"),
-    '#default_value' => $settings['xsl_params'],
+    '#default_value' => (isset($settings['xsl_params']) ? $settings['xsl_params'] : ""),
     '#element_validate' => $xsl_formatter_enabled ? array('xsl_formatter_xsl_params_validate') : array(),
     '#states' => $xsl_enabled_states,
     '#access' => $xsl_formatter_enabled,
@@ -381,7 +381,7 @@ function xpath_field_field_widget_settings_form($field, $instance) {
     '#title' => t('Show XML parsing warnings'),
     '#type' => 'checkbox',
     '#description' => t("Bad XML data input will trigger warnings that may show on screen. Disable this for a public site."),
-    '#default_value' => $settings['debug'],
+    '#default_value' => (isset($settings['debug']) ? $settings['debug'] : 0),
     '#states' => $xsl_enabled_states,
     '#access' => $xsl_formatter_enabled,
   );
