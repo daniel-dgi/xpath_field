@@ -467,11 +467,11 @@ function xpath_field_field_is_empty($item, $field) {
  *
  * @param string $xml_string
  * @param string $xpath
- * @param bool $strip_tags
+ * @param bool $text_only
  *
  * @return string The XML result.
  */
-function xpath_field_get_xpath_fragment($xml_string, $xpath, $strip_tags) {
+function xpath_field_get_xpath_fragment($xml_string, $xpath, $text_only) {
   $results = array();
   $resultsXML = array();
   try {
@@ -483,7 +483,7 @@ function xpath_field_get_xpath_fragment($xml_string, $xpath, $strip_tags) {
   }
   if (!empty($results)) {
     foreach ($results as $result) {
-      if ($strip_tags) {
+      if ($text_only) {
         $resultsXML[] = (string)$result;
       }
       else {
