@@ -398,6 +398,14 @@ function xpath_field_field_widget_settings_form($field, $instance) {
     ),
   );
 
+  $form['text_only'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Text contents only.'),
+    '#description' => t('Return the text contents of the node specified by the XPath query instead of the actual element.'),
+    '#return_value' => 1,
+    '#value' => array_key_exists('text_only', $settings) ? $settings['text_only'] : 1,
+  );
+
   return $form;
 }
 
@@ -455,10 +463,11 @@ function xpath_field_field_is_empty($item, $field) {
  *
  * @param string $xml_string
  * @param string $xpath
+ * @param boolean $text_only - Return the text contents
  *
  * @return string The XML result.
  */
-function xpath_field_get_xpath_fragment($xml_string, $xpath) {
+function xpath_field_get_xpath_fragment($xml_string, $xpath, $text_only) {
   $results = array();
   $resultsXML = array();
   try {
@@ -470,7 +479,12 @@ function xpath_field_get_xpath_fragment($xml_string, $xpath) {
   }
   if (!empty($results)) {
     foreach ($results as $result) {
-      $resultsXML[] = $result->asXml();
+      if ($text_only) {
+        $resultsXML[] = $result->__toString();
+      }
+      else {
+        $resultsXML[] = $result->asXml();
+      }
     }
   }
   return $resultsXML;
@@ -524,7 +538,7 @@ function xpath_field_extract_fragments($entity_type, $entity, $field_name, $fiel
 
         switch ($settings['use_xslt']) {
           case 'xpath':
-            $fragments = xpath_field_get_xpath_fragment($xml, $xpath);
+            $fragments = xpath_field_get_xpath_fragment($xml, $xpath, $settings['text_only']);
             break;
 
           case 'xslt':
